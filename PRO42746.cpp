@@ -5,17 +5,23 @@
 
 using namespace std;
 
-int decimal_digit_counter(int n) {
-    if (n == 0) return 1;
+//dec in 0..1000 
+//depth in 1..4
+int ndepth_decimal_getter(int dec, int depth) {
+    return 0;
+}
 
-    int cnt = 0;
-    while (n > 0) {
-        n /= 10;
+//dec in 0..1000 
+int decimal_digit_counter(int dec) {
+    if (dec == 0) return 1;
+    int cnt = 0; 
+    while (dec > 0) {
+        dec /= 10;
         cnt++;
     }
-    
     return cnt;
 }
+
 
 string solution(vector<int> numbers) {
     string answer = "";
@@ -24,7 +30,7 @@ string solution(vector<int> numbers) {
     return answer;
 }
 
-int main() {
+int main42746() {
     vector<int> tc1 = { 6,10,2 }; solution(tc1);
     vector<int> tc2 = { 3,30,34,5,9 }; solution(tc2);
 

@@ -146,7 +146,7 @@ public:
 	}
 
 	int delNode(char(&key)[KEY_MAX_LENGTH]) {
-		//TODO
+		//TODO HashTable delete operation
 	}
 
 	int editNode(char (&key)[KEY_MAX_LENGTH], int value) {
