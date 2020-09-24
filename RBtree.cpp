@@ -12,7 +12,8 @@ struct RBnode {
 	RBnode<T>* right;
 	RBnode<T>* parent;
 
-	RBnode(char c, T d, RBnode* l, RBnode* r, RBnode* p) {
+
+	RBnode(int c, T d, RBnode* l, RBnode* r, RBnode* p) {
 		color = c;
 		data = d;
 		left = l;
@@ -25,42 +26,115 @@ struct RBnode {
 template <typename T>
 struct RBtree {
 	RBnode<T>* root;
+	RBnode<T>* sentinel;
 
 	RBtree() {
+		sentinel = new RBnode<T>(BLACK, -1, NULL, NULL, NULL);
 		root = NULL;
 	}
 
 	RBtree(T data = 0) {
-		root = new RBnode<T>(BLACK, data, NULL, NULL, NULL);
-	}
-
-	int getColor(RBnode<T>* node){
-		if (node == NULL) return BLACK;
-		else return node->color;
-	}
-
-	void setColor(RBnode<T>* node, int color) {
-		if (node == NULL) return;
-		node->color = color;
+		sentinel = new RBnode<T>(BLACK, -1, NULL, NULL, NULL);
+		root = new RBnode<T>(BLACK, data, sentinel, sentinel, sentinel);
 	}
 
 	void traverse(RBnode<T>* cur) {
-		if (cur == NULL) return;
+		if (cur == sentinel) return;
 		traverse(cur->left);
 		cout << cur->data << endl;
 		traverse(cur->right);
 	}
 
+	//오른쪽으로 늘어진 사슬을 왼쪽으로 돌려 꺾음
 	void rotateLeft(RBnode<T>* node) {
-		
+		RBnode<T>* downnode = node->right;
+
+		//자식노드 전처리
+		node->right = downnode->left;
+		if (downnode->left != sentinel) {
+			downnode->left->parent = node;
+		}
+		downnode->left = node;
+
+		//부모노드설정, 위치변경
+		downnode->parent = node->parent;
+		if (node->parent == sentinel) {
+			root = downnode;
+		}
+		else if (node == node->parent->left) {
+			node->parent->left = node;
+		}
+		else node->parent->right = node;
+		node->parent = downnode;
+
 	}
 
+	//왼쪽으로 늘어진 사슬을 오른쪽으로 돌려 꺾음
 	void rotateRight(RBnode<T>* node) {
+		RBnode<T>* upnode = node->parent;
+
+		//자식노드 전처리
+		upnode->left = node->right;
+		if(node->right != sentinel) {
+			node->right->parent = upnode;
+		}
+		node->right = upnode;
+
+		//부모노드설정, 위치변경
+		node->parent = upnode->parent;
+		if (upnode->parent == sentinel) {
+			root = node;
+		}
+		else if (node == node->parent->left) {
+			node->parent->left = node;
+		}
+		else node->parent->right = node;
+		upnode->parent = node;
 
 	}
 
-	void restructureRBtree(RBnode<T>* node) {
-
+	void FIXUP(RBnode<T>* z) {
+		while (z->parent->color == RED) {
+			if (z->parent == z->parent->parent->left) {
+				RBnode<T>* y = z->parent->parent->right;
+				//CASE1
+				if (y->color == RED) {
+					z->parent->color = BLACK;
+					y->color = BLACK;
+					z->parent->parent->color = RED;
+					z = z->parent->parent;
+				}
+				//CASE2
+				else if (z == z->parent->right) {
+					z = z->parent;
+					rotateLeft(z);
+				}
+				//CASE3
+				z->parent->color = BLACK;
+				z->parent->parent->color = RED;
+				rotateRight(z);
+			}
+			else {
+				RBnode<T>* y = z->parent->parent->left;
+				//CASE1
+				if (y->color == RED) {
+					z->parent->color = BLACK;
+					y->color = BLACK;
+					z->parent->parent->color = RED;
+					z = z->parent->parent;
+				}
+				//CASE2
+				else if (z == z->parent->left) {
+					z = z->parent;
+					rotateRight(z);
+				}
+				//CASE3
+				z->parent->color = BLACK;
+				z->parent->parent->color = RED;
+				rotateLeft(z);
+			}
+		}
+		root->color = BLACK;
 	}
 
 	RBnode<T>* searchNode(RBnode<T>* current, T key) {
@@ -71,36 +145,24 @@ struct RBtree {
 		else searchNode(current->right, key);
 	}
 
-	int insertNode(RBnode<T>* node) {
-		if (root == NULL) {
-			root = node;
-			return 0;
+	int insertNode(RBnode<T>* z) {
+		RBnode<T>* y = sentinel;
+		RBnode<T>* x = root;
+		while (x != sentinel) { //z키값 범위에 맞는 위치를 리프노드까지 탐색
+			y = x;
+			if (z->data < x->data) x = x->left;
+			else x = x->right;
 		}
-
-		//INSERT IN LEAF
-		RBnode<T>* parent = NULL;
-		RBnode<T>* current = root;
-		while (current != NULL) {
-			if (current->data == node->data) {
-				cout << "INSERT ERR, NODE ALREADY EXISTS" << endl;
-				return -1;
-			}
-			else if (current->data > node->data) {
-				parent = current;
-				current = current->left;
-			}
-			else {
-				parent = current;
-				current = current->right;
-			}
-		}
-		if (node->data < parent->data) parent->left = node;
-		else parent->right = node;
-		node->parent = parent;
+		z->parent = y; //y는 z의 부모노드
+		if (y == sentinel) root = z;//루트거나 왼쪽,오른쪽자식
+		else if (z->data < y->data) y->left = z;
+		else y->right = z;
+		z->left = sentinel;
+		z->right = sentinel;
+		z->color = RED;
 
 		//RULE CHK, RESTRUCTURE
-		restructureRBtree(node);
-
+		FIXUP(z);
 		return 0;
 	}
 
@@ -160,12 +222,19 @@ struct RBtree {
 
 int main() {
 	RBtree<int> t = RBtree<int>(8);
-	t.insertNode(new RBnode<int>(RED,14,NULL, NULL, NULL));
-	t.insertNode(new RBnode<int>(RED, 25, NULL, NULL, NULL));
-	t.insertNode(new RBnode<int>(RED, 3, NULL, NULL, NULL));
-	t.insertNode(new RBnode<int>(RED, 17, NULL, NULL, NULL));
-	t.insertNode(new RBnode<int>(RED, 7, NULL, NULL, NULL));
-	t.insertNode(new RBnode<int>(RED, 9, NULL, NULL, NULL));
+	cout << "TREE" << endl;
+	t.insertNode(new RBnode<int>(RED,14, t.sentinel, t.sentinel, t.sentinel));
+	cout << "1" << endl;
+	t.insertNode(new RBnode<int>(RED, 25, t.sentinel, t.sentinel, t.sentinel));
+	cout << "2" << endl;
+	t.insertNode(new RBnode<int>(RED, 3, t.sentinel, t.sentinel, t.sentinel));
+	cout << "3" << endl;
+	t.insertNode(new RBnode<int>(RED, 17, t.sentinel, t.sentinel, t.sentinel));
+	cout << "4" << endl;
+	t.insertNode(new RBnode<int>(RED, 7, t.sentinel, t.sentinel, t.sentinel));
+	cout << "5" << endl;
+	t.insertNode(new RBnode<int>(RED, 9, t.sentinel, t.sentinel, t.sentinel));
+	cout << "6" << endl;
 	t.traverse(t.root);
 
 	return 0;

@@ -137,7 +137,7 @@ struct BSTtree {
 
 };
 
-int BSTmain() {
+int _testBTS() {
 
 	BSTtree<int> t = BSTtree<int>(8);
 	t.insertNode(new BSTnode<int>(14));
