@@ -24,8 +24,8 @@ struct BOJ11437 {
 };
 
 vector<BOJ11437*> nodelist; //index starts from 1
-int parent[50000][17]; //2^15=32768, 2^16=65536
-int visited[50000];
+vector<vector<int>> parent; //2^15=32768, 2^16=65536
+vector<int> visited;
 
 void dfs(int no, int depth) {
 	visited[no] = 1;
@@ -64,9 +64,18 @@ int lca(int a, int b) { //b>=a
 	return parent[a][0];
 }
 
-int main() {
-	int n; cin >> n; nodelist.resize(n + 1);
-	for (int i = 1; i <= n; i++) nodelist[i] = new BOJ11437(i);
+int BOJ11437main() {
+	int n; cin >> n; 
+	{
+		nodelist.resize(n + 1);
+		parent.resize(n + 1);
+		visited.resize(n + 1);
+		for (int i = 0; i <= n; i++) {
+			nodelist[i] = new BOJ11437(i);
+			parent[i] = vector<int>(17);
+		}
+	}
+	
 	for (int i = 0; i < n - 1; i++) {
 		int a, b; cin >> a >> b;
 		nodelist[a]->adj.push_back(nodelist[b]);
