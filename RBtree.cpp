@@ -20,7 +20,7 @@ struct RBnode {
 		right = r;
 		parent = p;
 	}
-
+	
 };
 
 template <typename T>
@@ -32,7 +32,7 @@ struct RBtree {
 		sentinel = new RBnode<T>(BLACK, -1, NULL, NULL, NULL);
 		root = NULL;
 	}
-
+	
 	RBtree(T data = 0) {
 		sentinel = new RBnode<T>(BLACK, -1, NULL, NULL, NULL);
 		root = new RBnode<T>(BLACK, data, sentinel, sentinel, sentinel);
@@ -47,50 +47,42 @@ struct RBtree {
 
 	//오른쪽으로 늘어진 사슬을 왼쪽으로 돌려 꺾음
 	void rotateLeft(RBnode<T>* node) {
-		RBnode<T>* downnode = node->right;
-
-		//자식노드 전처리
-		node->right = downnode->left;
-		if (downnode->left != sentinel) {
-			downnode->left->parent = node;
+		RBnode<T>* x = node->parent;
+		RBnode<T>* y = node;
+		x->right = y->left;
+		if (y->left != sentinel) {
+			y->left->parent = x;
 		}
-		downnode->left = node;
-
-		//부모노드설정, 위치변경
-		downnode->parent = node->parent;
-		if (node->parent == sentinel) {
-			root = downnode;
+		y->parent = x->parent;
+		if (x->parent == sentinel) {
+			root = y;
 		}
-		else if (node == node->parent->left) {
-			node->parent->left = node;
+		else if (x == x->parent->left) {
+			x->parent->left = y;
 		}
-		else node->parent->right = node;
-		node->parent = downnode;
-
+		else x->parent->right = y;
+		y->left = x;
+		x->parent = y;
 	}
 
 	//왼쪽으로 늘어진 사슬을 오른쪽으로 돌려 꺾음
 	void rotateRight(RBnode<T>* node) {
-		RBnode<T>* upnode = node->parent;
-
-		//자식노드 전처리
-		upnode->left = node->right;
-		if(node->right != sentinel) {
-			node->right->parent = upnode;
+		RBnode<T>* x = node;
+		RBnode<T>* y = node->parent;
+		y->left = x->right;
+		if (x->right != sentinel) {
+			x->right->parent = y;
 		}
-		node->right = upnode;
-
-		//부모노드설정, 위치변경
-		node->parent = upnode->parent;
-		if (upnode->parent == sentinel) {
-			root = node;
+		x->parent = y->parent;
+		if (y->parent == sentinel) {
+			root = x;
 		}
-		else if (node == node->parent->left) {
-			node->parent->left = node;
+		else if (y == y->parent->left) {
+			y->parent->left = x;
 		}
-		else node->parent->right = node;
-		upnode->parent = node;
-
+		else y->parent->right = x;
+		x->right = y;
+		y->parent = x;
 	}
 
 	void FIXUP(RBnode<T>* z) {
@@ -104,15 +96,17 @@ struct RBtree {
 					z->parent->parent->color = RED;
 					z = z->parent->parent;
 				}
-				//CASE2
-				else if (z == z->parent->right) {
-					z = z->parent;
-					rotateLeft(z);
+				else {
+					//CASE2
+					if (z == z->parent->right) {
+						z = z->parent;
+						rotateLeft(z);
+					}
+					//CASE3
+					z->parent->color = BLACK;
+					z->parent->parent->color = RED;
+					rotateRight(z);
 				}
-				//CASE3
-				z->parent->color = BLACK;
-				z->parent->parent->color = RED;
-				rotateRight(z);
 			}
 			else {
 				RBnode<T>* y = z->parent->parent->left;
@@ -123,15 +117,17 @@ struct RBtree {
 					z->parent->parent->color = RED;
 					z = z->parent->parent;
 				}
-				//CASE2
-				else if (z == z->parent->left) {
-					z = z->parent;
-					rotateRight(z);
+				else {
+					//CASE2
+					if (z == z->parent->left) {
+						z = z->parent;
+						rotateRight(z);
+					}
+					//CASE3
+					z->parent->color = BLACK;
+					z->parent->parent->color = RED;
+					rotateLeft(z);
 				}
-				//CASE3
-				z->parent->color = BLACK;
-				z->parent->parent->color = RED;
-				rotateLeft(z);
 			}
 		}
 		root->color = BLACK;
@@ -220,7 +216,7 @@ struct RBtree {
 	}
 };
 
-int main() {
+int RBtreemain() {
 	RBtree<int> t = RBtree<int>(8);
 	cout << "TREE" << endl;
 	t.insertNode(new RBnode<int>(RED,14, t.sentinel, t.sentinel, t.sentinel));

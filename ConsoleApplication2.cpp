@@ -1,7 +1,7 @@
 ﻿#include <iostream>
 #include <vector>
 
-int vadfaesmain() {
+int vadfdffaesmain() {
 
 	return 0;
 }
