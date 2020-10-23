@@ -1,85 +1,51 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
+#pragma warning(disable:4996)
+
+//http://www.secmem.org/blog/2019/02/10/TreeDP/
+//https://justicehui.github.io/hard-algorithm/2019/01/18/treeDP/
+//https://justicehui.github.io/ps/2019/01/05/BOJ1693/
+//https://www.crocus.co.kr/636
+//① 트리의 독립집합을 구성할 때, 가장 가중치가 큰 독립집합의 원소 가중치합을 구하기
+//② 수행시간 : scanf() 0.798, getchar() 0.390, cin 2.051
+//③ #define a>b?a:b 보다 algorithm max가 더 빠르네
 
 using namespace std;
 
-//NODE in 1..N, EDGE is below N-1, 무방향그래프, 모든마을은 연결되어있음
-//1. 우수마을로 선정된 마을주민 수의 총합을 최대로
-//2. 우수마을끼리는 서로 인접해 있을 수 없음
-//3. 우수마을로 선정되지 못한 마을은 적어도 하나의 우수마을과 인접해 있어야함
+int people[10001];
+int visitBOJ1949[10001];
+vector<vector<int>> adjBOJ1949;
 
-struct BOJ1949node {
-	int no;
-	int population;
-	vector<BOJ1949node*> adj;
+int traverse(int cur, int state) {
+	visitBOJ1949[cur] = 1;
 
-	BOJ1949node(int n) {
-		no = n;
-		population = -1;
-		adj = vector<BOJ1949node*>();
+	int result = 0;
+	for (int i = 0; i < adjBOJ1949[cur].size(); i++) {
+		int v = adjBOJ1949[cur][i];
+		if (visitBOJ1949[v]) continue;
+
+		if (state == 1) result += traverse(v, 0);
+		else result += max(traverse(v, 0), traverse(v, 1) + people[v]);
 	}
-};
 
-vector<int> results;
-vector<BOJ1949node*> node;
-
-int allVisited(vector<int>& v) {
-	int sum = 0;
-	for (int i = 1; i < v.size(); i++) {
-		if (v[i] == 0) return 0;
-		else if (v[i] == 1) sum += node[i]->population;
-	}
-	return sum;
+	visitBOJ1949[cur] = 0; //방문확인배열 미리 초기화하기
+	return result;
 }
 
-int num = 1;
-void brute_force(vector<BOJ1949node*> &node, vector<int> visited, int cur, int state) {
-	visited[cur] = state;
-	cout << "VISIT" << cur << ", STATE : " << state << endl;
-	int a = allVisited(visited);
-	if (a > 0) {
-		results.push_back(a);
-		cout << "#" << num++ << " " << a << endl;
-		return;
+int mainBOJ1949() {
+	int n; scanf("%d", &n);
+	adjBOJ1949 = vector<vector<int>>(n + 1);
+
+	for (int i = 1; i < n + 1; i++) scanf("%d", &people[i]);
+	for (int i = 0; i < n - 1; i++) {
+		int a, b; scanf("%d %d", &a, &b);
+		adjBOJ1949[a].push_back(b);
+		adjBOJ1949[b].push_back(a);
 	}
 
-	vector<int> states;
-	if (state < 0) states = { 1, -1 };
-	else states = { 1 };
-
-	for (int i = 0; i < node[cur]->adj.size(); i++) {
-		int c = node[cur]->adj[i]->no;
-		for (int j = 0; j < states.size(); j++) {
-			if (visited[c] != 0) continue;
-			brute_force(node, visited, c, states[j]);
-		}
-	}
-}
-
-int main() {
-	int n; cin >> n; node.resize(n + 1);
-	vector<int> visited(n + 1);
-
-	for (int i = 1; i <= n; i++) {
-		node[i] = new BOJ1949node(i);
-		cin >> node[i]->population;
-	}
-	for (int edge = 0; edge < n - 1; edge++) {
-		int a, b; cin >> a >> b;
-		node[a]->adj.push_back(node[b]);
-		node[b]->adj.push_back(node[a]);
-	}
-
-	//only node reference variable
-	node[0] = new BOJ1949node(0);
-	node[0]->adj.push_back(node[1]);
-	brute_force(node, visited, 0, -1);
-
-	int max = -1;
-	for (int i = 0; i < results.size(); i++) {
-		if (max > results[i]) max = results[i];
-	}
-	cout << max;
-
+	//dp[i][j] i를 j로 했을 때, i를 루트로 하는 서브트리의 최대값
+	int d = max(traverse(1, 0), traverse(1, 1) + people[1]);
+	printf("%d", d);
 	return 0;
 }
