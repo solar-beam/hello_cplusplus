@@ -1,5 +1,1 @@
-/Debug
-*.txt
-*.vcxproj
-*.vcxproj.*
-*cheat*
+/ignore
