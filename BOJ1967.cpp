@@ -5,7 +5,7 @@
 #define MAX(a, b) a>b?a:b
 
 using namespace std;
-//TODO solve BOJ1967
+//TODO BOJ1967
 //BFS*n, 모든 정점에 대하여 거리구하기
 //???, 공통조상찾기
 //BFS*2, BFS로 두번탐색

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 
-//TODO BOJ14267 unsolved
+//TODO BOJ14267
 using namespace std;
 
 class TreeNode {
